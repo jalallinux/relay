@@ -4,12 +4,26 @@ import { Readable } from "node:stream";
 const ALLOWED = ["content-type", "x-api-key", "authorization", "anthropic-version", "accept"];
 const DROP = new Set(["content-encoding", "content-length", "transfer-encoding", "connection"]);
 
+// Log line: HH:MM:SS(UTC) LEVEL METHOD /path status ms [· note]. Same in go/main.go.
+const paint = (c, v) => (process.env.NO_COLOR ? v : `\x1b[${c}m${v}\x1b[0m`);
+const say = (level, msg) =>
+  console.log(`${paint("2", new Date().toISOString().slice(11, 19))} ${paint("1;" + { INF: 32, WRN: 33, ERR: 31 }[level], level)} ${msg}`);
+
 const fail = (res, status, message) => {
   res.writeHead(status, { "cache-control": "no-store", "content-type": "application/json; charset=utf-8" });
   res.end(JSON.stringify({ code: "WORKERERR", message }));
 };
 
 http.createServer(async (req, res) => {
+  const t0 = Date.now();
+  let note = "";
+  // path only: the query string may carry credentials
+  res.on("close", () => {
+    const c = res.statusCode;
+    const level = c >= 500 ? "ERR" : c >= 400 ? "WRN" : "INF";
+    const sc = c >= 500 ? 31 : c >= 400 ? 33 : c >= 300 ? 36 : 32;
+    say(level, `${paint("1", req.method.padEnd(6))} ${req.url.split("?")[0]} ${paint(sc, c)} ${paint("2", `${Date.now() - t0}ms`)}${note ? " " + paint("2", "· " + note) : ""}`);
+  });
   let target;
   try { target = new URL(process.env.UPSTREAM_BASE_URL); } catch { return fail(res, 500, "UPSTREAM_BASE_URL must be an https URL"); }
   if (target.protocol !== "https:" || target.username || target.password || target.search || target.hash)
@@ -44,6 +58,11 @@ http.createServer(async (req, res) => {
     if (!up.body) return res.end();
     Readable.fromWeb(up.body).on("error", () => res.destroy()).pipe(res);
   } catch (e) {
+    note = e.cause?.code || e.name;
     if (res.headersSent) res.destroy(); else fail(res, 502, "upstream unreachable");
   }
-}).listen(3000, "0.0.0.0");
+}).listen(3000, "0.0.0.0", () => {
+  let h = "NOT SET";
+  try { h = new URL(process.env.UPSTREAM_BASE_URL).host; } catch {}
+  say("INF", `relay listening ${paint("1", ":3000")} upstream=${h}`);
+});
