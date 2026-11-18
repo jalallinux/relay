@@ -14,7 +14,7 @@ No server, no Docker. The same relay as a single Worker file, `worker.js`. The f
    ```
 3. 🛫 Deploy:
    ```bash
-   npx wrangler deploy worker.js --name relay --compatibility-date 2026-11-10
+   npx wrangler deploy
    ```
 4. 🔐 Set the upstream as a **secret** (not a plain var, so it stays out of your repo and logs):
    ```bash
@@ -40,18 +40,26 @@ No server, no Docker. The same relay as a single Worker file, `worker.js`. The f
 
 ## 📍 Choose where the Worker runs (optional)
 
-By default the Worker runs near the user. If the upstream only accepts certain countries, pin it to a region. The full list of ids is in the comment at the top of `worker.js`. Pass it in the upload metadata (or `wrangler.toml`):
+By default the Worker runs near the user. If the upstream is slow or restricted from some places, pin the Worker to a region. All ids are listed in the comment at the top of `worker.js`. The region lives in [`wrangler.toml`](wrangler.toml):
 
 ```toml
-name = "relay"
-main = "worker.js"
-compatibility_date = "2026-11-10"
-
 [placement]
-region = "aws:eu-central-1"   # Frankfurt
+region = "aws:eu-west-3"   # Paris
 ```
 
-Then run `npx wrangler deploy`.
+Change it, then run `npx wrangler deploy` again.
+
+📊 Measured from Iran against a Cloudflare-proxied upstream (22 regions, 12 rounds each, small and 200 KB bodies):
+
+| 🏅 Rank | 🌍 Region | 🏙️ City | ⏱️ Median |
+| ---: | --- | --- | ---: |
+| 1 | `aws:eu-west-3` | Paris | ~385 ms |
+| 2 | `aws:eu-central-2` | Zurich | ~390 ms |
+| 3 | `aws:eu-west-2` | London | ~400 ms |
+| 4 | `aws:eu-central-1` | Frankfurt | ~430 ms |
+| 5 | `aws:eu-north-1` | Stockholm | ~440 ms |
+
+Gulf and India regions were slower (700 ms and up). Results depend on your users' network, so measure from where they are.
 
 > 💡 Placement only moves where **the Worker** runs. Users still connect to their nearest Cloudflare edge first; it never changes who can reach your relay.
 

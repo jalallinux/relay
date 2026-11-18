@@ -1,0 +1,10 @@
+name = "relay"
+main = "worker.js"
+compatibility_date = "2026-11-10"
+
+# Where the Worker runs when it calls the upstream. Ids are listed at the top of worker.js.
+# Paris was the fastest of 22 regions measured from Iran against a Cloudflare-proxied upstream.
+[placement]
+region = "aws:eu-west-3"
+
+# Set the upstream as a secret, not a var: npx wrangler secret put UPSTREAM_BASE_URL

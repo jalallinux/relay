@@ -15,7 +15,7 @@
 // A status and body that came from the destination are returned unchanged.
 //
 // Placement options from the Workers placement-regions API. The live value is
-// upload metadata, currently aws:eu-central-1. Editing this list does not move
+// upload metadata, currently aws:eu-west-3. Editing this list does not move
 // the worker. One id per line, grouped by country.
 //
 // South Africa
