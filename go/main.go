@@ -17,7 +17,19 @@ var allowed = []string{"Content-Type", "X-Api-Key", "Authorization", "Anthropic-
 var drop = map[string]bool{"Content-Encoding": true, "Content-Length": true, "Transfer-Encoding": true, "Connection": true}
 
 // redirects are returned to the client untouched, never followed
-var client = &http.Client{CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+// the default keeps only 2 idle conns per host, which forces a new TLS handshake per request under load
+var client = &http.Client{
+	Transport: &http.Transport{
+		Proxy:               nil,
+		DialContext:         (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+		ForceAttemptHTTP2:   true,
+		MaxIdleConns:        0,
+		MaxIdleConnsPerHost: 1024,
+		IdleConnTimeout:     30 * time.Second,
+		TLSHandshakeTimeout: 10 * time.Second,
+	},
+	CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+}
 
 // Log line: HH:MM:SS(UTC) LEVEL METHOD /path status ms [· note]. Same in js/server.mjs.
 func paint(code, v string) string {

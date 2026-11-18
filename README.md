@@ -38,6 +38,19 @@ Registry: `ghcr.io/jalallinux/relay`
 
 Go is ~18x smaller than the JavaScript image, because the Node binary alone is 129 MB.
 
+## 🏋️ Load test
+
+Keep-alive clients, 1 KB JSON reply, local upstream with 20 ms latency, 8-core machine, 10 s per run. This measures the relay's own overhead; a real upstream is usually the bottleneck.
+
+| 🔌 Concurrent | 🧰 Runtime | ⚡ Req/s | ⏱️ p50 | 🐢 p99 | 💾 Memory | ❌ Errors |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 1,000 | 🐹 Go | **~5,800** | **157 ms** | **383 ms** | **187 MB** | 0 |
+| 1,000 | 🟢 Node.js | ~1,900 | 254 ms | 10,273 ms | 514 MB | 0 |
+| 3,000 | 🐹 Go | **~5,500** | **495 ms** | **1,408 ms** | **187 MB** | 0 |
+| 3,000 | 🟢 Node.js | ~670 | 5,004 ms | 11,617 ms | 514 MB | 0 |
+
+📌 Both handle 1000+ simultaneous requests without dropping any. Go keeps throughput flat as load grows; Node is single-threaded, so requests queue and latency climbs. For heavy traffic use Go, or run several Node containers behind a load balancer.
+
 ## 🚀 Quick start
 
 ```bash
