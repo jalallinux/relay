@@ -27,6 +27,10 @@ var client = &http.Client{
 		MaxIdleConnsPerHost: 1024,
 		IdleConnTimeout:     30 * time.Second,
 		TLSHandshakeTimeout: 10 * time.Second,
+		// A stalled path (not a closed one) never errors by itself: without these, requests wait
+		// forever and keep reusing the dead HTTP/2 connection. Body streaming is not limited (SSE).
+		ResponseHeaderTimeout: 60 * time.Second,
+		HTTP2: &http.HTTP2Config{SendPingTimeout: 15 * time.Second, PingTimeout: 10 * time.Second},
 	},
 	CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
 }
