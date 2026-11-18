@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"log"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 )
 
 var allowed = []string{"Content-Type", "X-Api-Key", "Authorization", "Anthropic-Version", "Accept"}
@@ -96,5 +99,16 @@ func handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.ListenAndServe("0.0.0.0:3000", http.HandlerFunc(handle))
+	// scratch image has no shell or curl, so HEALTHCHECK re-runs this binary
+	if len(os.Args) > 1 && os.Args[1] == "-healthcheck" {
+		c, err := net.DialTimeout("tcp", "127.0.0.1:3000", 2*time.Second)
+		if err != nil {
+			os.Exit(1)
+		}
+		c.Close()
+		return
+	}
+	if err := http.ListenAndServe("0.0.0.0:3000", http.HandlerFunc(handle)); err != nil {
+		log.Fatal(err)
+	}
 }

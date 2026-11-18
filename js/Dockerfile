@@ -11,4 +11,5 @@ WORKDIR /app
 COPY server.mjs .
 USER 1000
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=3s --retries=3 CMD ["/usr/local/bin/node", "-e", "require('net').connect(3000,'127.0.0.1').on('connect',()=>process.exit(0)).on('error',()=>process.exit(1))"]
 CMD ["/usr/local/bin/node", "server.mjs"]

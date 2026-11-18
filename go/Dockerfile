@@ -9,4 +9,5 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifica
 COPY --from=build /relay /relay
 USER 1000
 EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=3s --retries=3 CMD ["/relay", "-healthcheck"]
 ENTRYPOINT ["/relay"]
