@@ -26,8 +26,8 @@ http.createServer(async (req, res) => {
   });
   let target;
   try { target = new URL(process.env.UPSTREAM_BASE_URL); } catch { return fail(res, 500, "UPSTREAM_BASE_URL must be an https URL"); }
-  if (target.protocol !== "https:" || target.username || target.password || target.search || target.hash)
-    return fail(res, 500, "UPSTREAM_BASE_URL must be only an https origin and optional path");
+  if (!(target.protocol === "https:" || (target.protocol === "http:" && process.env.ALLOW_HTTP === "1")) || target.username || target.password || target.search || target.hash)
+    return fail(res, 500, "UPSTREAM_BASE_URL must be only an https origin (http needs ALLOW_HTTP=1) and optional path");
   const host = (req.headers.host || "").split(":")[0].toLowerCase();
   if (host === target.hostname.toLowerCase()) return fail(res, 500, "UPSTREAM_BASE_URL points at this relay");
 

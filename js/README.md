@@ -58,5 +58,6 @@ Want it smaller? Use the [Go version](../go).
 | 🔧 Variable | 📝 Meaning |
 | --- | --- |
 | `UPSTREAM_BASE_URL` | Required. `https://` origin, optional path prefix. No query, fragment or credentials. |
+| `ALLOW_HTTP` | Optional. Set to `1` to accept an `http://` upstream. Keys travel unencrypted: private networks only. |
 
 Listens on `0.0.0.0:3000`.

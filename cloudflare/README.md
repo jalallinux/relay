@@ -61,6 +61,8 @@ Then run `npx wrangler deploy`.
 - 🧮 Free plan: 100k requests per day, and CPU time limits. Streaming responses are fine.
 - 🔑 Anyone with the Worker URL can use your upstream through it. Add auth in front if it is public.
 
+> ℹ️ The Worker version has no `ALLOW_HTTP` switch: it accepts only `https://`.
+
 ## ⚙️ Config
 
 | 🔧 Name | 📝 Meaning |

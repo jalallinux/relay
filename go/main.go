@@ -82,8 +82,8 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "UPSTREAM_BASE_URL must be an https URL")
 		return
 	}
-	if t.Scheme != "https" || t.User != nil || t.RawQuery != "" || t.Fragment != "" {
-		fail(w, 500, "UPSTREAM_BASE_URL must be only an https origin and optional path")
+	if badScheme(t.Scheme) || t.User != nil || t.RawQuery != "" || t.Fragment != "" {
+		fail(w, 500, "UPSTREAM_BASE_URL must be only an https origin (http needs ALLOW_HTTP=1) and optional path")
 		return
 	}
 	host := r.Host
@@ -152,6 +152,11 @@ func handle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+// plain http would send API keys in clear text, so it is opt-in (private networks only)
+func badScheme(s string) bool {
+	return s != "https" && !(s == "http" && os.Getenv("ALLOW_HTTP") == "1")
 }
 
 func upstreamHost() string {

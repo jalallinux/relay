@@ -14,7 +14,7 @@ One idea, three ways to run it:
 
 ## ✨ What it does
 
-- 🔒 Upstream must be `https://`. One env var: `UPSTREAM_BASE_URL`.
+- 🔒 Upstream must be `https://` (set `ALLOW_HTTP=1` to allow `http://` on a private network). Main env var: `UPSTREAM_BASE_URL`.
 - 🕵️ Forwards **only** 5 headers: `content-type`, `x-api-key`, `authorization`, `anthropic-version`, `accept`. Client IP, cookies, `User-Agent`, `X-Forwarded-*` are never sent.
 - 🌊 Streams request and response bodies, so SSE / chat streaming works.
 - ↪️ Redirects are returned to the client, never followed.
@@ -54,6 +54,7 @@ Put it behind a TLS reverse proxy (Caddy, Traefik, Coolify, Cloudflare) in produ
 
 - 🙈 This hides your client from the upstream, but the relay's own IP is visible to it. On Cloudflare Workers, the runtime also adds `CF-Worker`, `CF-Ray` and `CDN-Loop` headers that can't be removed.
 - 🔑 It forwards your `Authorization` / `x-api-key` as-is. Anyone who can reach the relay can use your upstream through it: restrict access (firewall, private network, or an auth layer in front).
+- 🔓 `ALLOW_HTTP=1` sends your keys unencrypted to the upstream. Use it only inside a private network (e.g. a Docker network), never over the internet.
 - 🧱 Env is read at **run** time, never at build time. Don't bake `UPSTREAM_BASE_URL` into an image.
 
 ## 📄 License
